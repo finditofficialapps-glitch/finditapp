@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Heart, MapPin, MessageCircle, PlusSquare, Search } from 'lucide-react'
 import { supabase } from './lib/supabase'
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 type Post = {
   id: string
@@ -52,13 +53,15 @@ export default function App() {
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUserId(data.session?.user?.id ?? null)
-    })
+    supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
+  setUserId(data.session?.user?.id ?? null)
+})
 
-    const { data } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUserId(session?.user?.id ?? null)
-    })
+const { data } = supabase.auth.onAuthStateChange(
+  (_e: AuthChangeEvent, session: Session | null) => {
+    setUserId(session?.user?.id ?? null)
+  },
+)
 
     return () => data.subscription.unsubscribe()
   }, [])
